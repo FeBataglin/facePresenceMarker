@@ -101,7 +101,7 @@ export class ResponsibleComponent implements OnInit {
   createUserForm() {
     this.userForm = this.formBuilder.group({
       email: [''],
-      senha: [''],
+      password: [''],
       admin: false,
     });
   }

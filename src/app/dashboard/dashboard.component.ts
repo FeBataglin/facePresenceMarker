@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { faBookOpen, faChalkboard, faChalkboardTeacher, faClipboard, faClipboardCheck, faClipboardList, faFilm, faGraduationCap, faList, faUniversity, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import * as firebase from "firebase"
+import { map } from 'rxjs/operators';
+import { UserService } from '../shared/services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,10 +21,49 @@ export class DashboardComponent implements OnInit {
   studentsIcon = faUserGraduate;
   clipboardCheckIcon = faList;
   clipboardIcon = faClipboardList;
+  admin: boolean;
+  user;
+  isHidden;
+  userEmail;
+  disabled: boolean;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private afAuth: AngularFireAuth, private db: AngularFirestore, private userService: UserService) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.user = this.afAuth.authState;
+    this.user.subscribe(
+      (user) => {
+        if (user) {
+          this.userEmail = user;
+          this.getUserAdmin(this.userEmail.email);
+        } else {
+          this.userEmail = null;
+        }
+      }
+    );
+  }
+
+  getUserAdmin(email) {
+    this.userService.getAll().snapshotChanges().pipe(
+      map(changes =>
+        changes.map(c =>
+          ({ id: c.payload.doc.id, ...c.payload.doc.data() })
+        )
+      )
+    ).subscribe(data => {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].email === email) {
+          this.admin = data[i].admin;
+          if(!this.admin) {
+            //this.isHidden = true;
+            this.disabled = false;
+          } else {
+            this.disabled = true;
+            //this.isHidden = false;
+          }
+        }
+      }
+    });
   }
 
   insituitionRegister() {

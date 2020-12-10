@@ -5,9 +5,9 @@
         <div class="po-row">
             <po-input class="po-md-6" name="nome" [(ngModel)]="nome" formControlName="nome" p-clean p-label="Nome do Responsável" p-required> </po-input>
 
-            <po-number class="po-md-6" name="cpf" [(ngModel)]="cpf" formControlName="cpf" p-clean p-label="CPF" p-required></po-number>
+            <po-number class="po-md-6" p-disabled="true" name="cpf" [(ngModel)]="cpf" formControlName="cpf" p-clean p-label="CPF" p-required></po-number>
 
-            <po-input class="po-md-6"  formControlName="email"  p-label="E-mail" p-required> </po-input>
+            <po-input p-disabled="true" class="po-md-6"  formControlName="email"  p-label="E-mail" p-required> </po-input>
         </div>
 
         <div class="po-row">
