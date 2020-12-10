@@ -7,7 +7,6 @@ import { PresenceListComponent } from './presence-list/presence-list.component';
 import { RecognitionComponent } from './recognition/recognition.component';
 
 const routes: Routes = [
- // { path: '**', redirectTo: '/login' },
   {
     path: 'register',
     loadChildren: () => import('./register/register.module').then(m => m.RegisterModule)

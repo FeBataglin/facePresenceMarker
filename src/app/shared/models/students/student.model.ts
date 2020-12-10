@@ -2,6 +2,7 @@
 export interface Student {
     id: string;
     nome: string;
+    email: string;
     matricula: number;
     instituicao: string;
     curso: Array<String>;

@@ -103,6 +103,8 @@ export class ResponsibleComponent implements OnInit {
       email: [''],
       password: [''],
       admin: false,
+      nome: [''],
+      identificacao: [null]
     });
   }
 
@@ -116,6 +118,8 @@ export class ResponsibleComponent implements OnInit {
       this.userForm.value['email'] = this.responsibleForm.value['email'];
       this.userForm.value['password'] = `${this.responsibleForm.value['cpf']}@senai`;
       this.userForm.value['admin'] = this.responsibleForm.value['admin'];
+      this.userForm.value['nome'] = this.responsibleForm.value['nome'];
+      this.userForm.value['identificacao'] = this.responsibleForm.value['cpf'];
 
       this.responsibleService.create(this.responsibleForm.value)
         .then(async () => {

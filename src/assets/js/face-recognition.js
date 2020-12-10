@@ -1,5 +1,5 @@
 
-function recognition(responsible, disciplineName, persons, data) {
+function recognition(responsible, disciplineName, persons, data, email) {
     const cam = document.getElementById('cam');
     var responsavel = document.getElementById('responsavel');
     var disciplina = document.getElementById('disciplina');

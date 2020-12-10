@@ -4,5 +4,6 @@ export interface Recognition {
     data: String,
     presenca: String,
     responsavel: String,
-    disciplina: String
+    disciplina: String,
+    email: string;
 }

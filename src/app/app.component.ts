@@ -1,10 +1,11 @@
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { faClipboardCheck } from '@fortawesome/free-solid-svg-icons';
 import { PoMenuItem } from '@po-ui/ng-components';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { UserService } from './shared/services/user.service';
 import { map } from 'rxjs/operators';
+import { Location } from '@angular/common';
 
 declare const myTest: any;
 
@@ -20,7 +21,8 @@ export class AppComponent implements OnInit {
   user;
   userEmail;
   admin;
-  constructor(public router: Router, private afAuth: AngularFireAuth, private userService: UserService) { }
+
+  constructor(public router: Router, private afAuth: AngularFireAuth, private userService: UserService, private location: Location) { }
 
   private changeMenu() {
     this.menuItems = [
@@ -72,9 +74,11 @@ export class AppComponent implements OnInit {
           this.getUserAdmin(this.userEmail.email);
         } else {
           this.userEmail = null;
+          this.router.navigateByUrl('/login')
         }
       }
     );
+    this.changeMenu();
     if (window.location.href === "http://localhost:4200/#/login") {
       this.isHidden = true;
     } else {
@@ -83,7 +87,6 @@ export class AppComponent implements OnInit {
   }
 
   getUserAdmin(email) {
-    console.log(email)
     this.userService.getAll().snapshotChanges().pipe(
       map(changes =>
         changes.map(c =>

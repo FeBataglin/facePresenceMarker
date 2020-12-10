@@ -1,6 +1,6 @@
 <po-page-default>
     <div style="margin-top: 50px;" class="principalDiv po-md-12">
-
+        <po-loading-overlay p-text="Atualizando lista..."  [hidden]="isHideLoading"></po-loading-overlay>
         <div class="filters po-md-3">
             <po-datepicker 
                 name="datepicker"
@@ -23,7 +23,6 @@
         </div>
         <div class="po-md-9">
             <div *ngFor="let itemPresenceList of itemsPresenceList; let i = index" class="presence po-md-12">
-                <po-loading-overlay p-text="Atualizando lista..."  [hidden]="isHideLoading"></po-loading-overlay>
                 <po-accordion>
                     <po-accordion-item  class="po-md-12" [p-label]="disciplineName[i]">
                         <po-table  

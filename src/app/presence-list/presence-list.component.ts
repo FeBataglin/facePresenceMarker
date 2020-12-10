@@ -10,6 +10,8 @@ import { DOCUMENT } from '@angular/common';
 import { RecognitionService } from '../shared/services/recognition.service';
 import { Subject } from 'rxjs';
 import * as firebase from 'firebase';
+import { UserService } from '../shared/services/user.service';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-presence-list',
@@ -37,6 +39,7 @@ export class PresenceListComponent implements OnInit {
   disciplines: Array<any> = [];
   itemsPresenceListGeneral: Array<any> = [];
   servicePresenceListResponse: Array<any> = [];
+  notAdminFilteredList: Array<any> = [];
 
   data;
   responsible;
@@ -48,7 +51,10 @@ export class PresenceListComponent implements OnInit {
   disciplineIndex;
   inputSearch;
   dataValue;
-  isHideLoading = true;
+  isHideLoading = false;
+  user;
+  userEmail;
+  admin;
 
   docRef = this.db.collection("lista_de_presenca");
 
@@ -68,22 +74,59 @@ export class PresenceListComponent implements OnInit {
     private studentService: StudentService,
     private presenceListService: PresenceListService,
     private db: AngularFirestore,
-    private recognitionService: RecognitionService
+    private recognitionService: RecognitionService,
+    private userService: UserService,
+    private afAuth: AngularFireAuth
   ) { }
 
   ngOnInit(): void {
     this.innerWidth = window.innerWidth;
     this.setupComponents();
     this.columnsPresenceList = this.presenceListService.getColumns();
-    this.getStudents();
+    this.user = this.afAuth.authState;
+
+    this.user.subscribe(
+      (user) => {
+        if (user) {
+          this.userEmail = user;
+          this.getUserAdmin(this.userEmail.email);
+        } else {
+          this.userEmail = null;
+        }
+      }
+    );
+
+    //this.getStudents();
     this.getFilters();
   }
+
+  getUserAdmin(email) {
+    this.userService.getAll().snapshotChanges().pipe(
+      map(changes =>
+        changes.map(c =>
+          ({ id: c.payload.doc.id, ...c.payload.doc.data() })
+        )
+      )
+    ).subscribe(data => {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].email === email) {
+          this.admin = data[i].admin;
+          if (!this.admin) {
+            this.getStudentsNotAdmin(data[i].email);
+          } else {
+            this.getStudentsAdmin();
+          }
+        }
+      }
+    });
+  }
+
 
   changeDate(event) {
     this.referenceDate = event;
   }
 
-  getStudents() {
+  getStudentsAdmin() {
     this.studentService.getAll().snapshotChanges().pipe(
       map(changes =>
         changes.map(c =>
@@ -94,6 +137,23 @@ export class PresenceListComponent implements OnInit {
 
       for (let i = 0; i < data.length; i++) {
         this.students.push(data[i]);
+      }
+    });
+    this.getItemsAux();
+  }
+
+  getStudentsNotAdmin(email) {
+    this.studentService.getAll().snapshotChanges().pipe(
+      map(changes =>
+        changes.map(c =>
+          ({ id: c.payload.doc.id, ...c.payload.doc.data() })
+        )
+      )
+    ).subscribe(data => {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].email === email) {
+          this.students.push(data[i]);
+        }
       }
     });
     this.getItemsAux();
@@ -172,7 +232,7 @@ export class PresenceListComponent implements OnInit {
           this.recognitionService.createFalls(this.putFalls[i2].id, this.putFalls[i2].responsavel, this.putFalls[i2].disciplina, this.putFalls[i2].data)
         }
 
-        this.getItems();
+        //this.getItems();
         this.isHideLoading = false;
         setTimeout(() => {
           this.onClearFilters();
@@ -219,7 +279,6 @@ export class PresenceListComponent implements OnInit {
         });
 
         this.disciplines.push(unique[index].disciplina);
-
       }
     });
   }
@@ -239,6 +298,7 @@ export class PresenceListComponent implements OnInit {
 
     let filteredPresenceList = [];
     this.itemsPresenceList = [];
+    this.notAdminFilteredList = [];
 
     this.disciplineCheckbox.forEach(disciplines => {
       if (disciplines.selected) {
@@ -250,7 +310,6 @@ export class PresenceListComponent implements OnInit {
 
     if (filteredDisciplines.length > 0) {
       filteredPresenceList = filteredPresenceList.filter(compromise => filteredDisciplines.indexOf(compromise.disciplina.toString()) !== -1);
-      //filteredPresenceList = filteredPresenceList.filter(f => filteredDisciplines.some(item => item === f.disciplina));
     }
 
     if (this.inputSearch && this.inputSearch !== '') {
@@ -262,7 +321,6 @@ export class PresenceListComponent implements OnInit {
 
     this.itemsPresenceListGeneral = filteredPresenceList;
 
-
     for (let i3 = 0; i3 < this.itemsPresenceListGeneral.length; i3++) {
       for (let i4 = 0; i4 < this.students.length; i4++) {
         if (this.students[i4].id === this.itemsPresenceListGeneral[i3].id) {
@@ -271,6 +329,17 @@ export class PresenceListComponent implements OnInit {
       }
     }
 
+    if (!this.admin) {
+      for (let i1 = 0; i1 < this.itemsPresenceListGeneral.length; i1++) {
+        for (let i2 = 0; i2 < this.students.length; i2++) {
+          if (this.itemsPresenceListGeneral[i1].id === this.students[i2].nome) {
+            this.notAdminFilteredList.push(this.itemsPresenceListGeneral[i1])
+          } 
+        }
+      }
+      this.itemsPresenceListGeneral = this.notAdminFilteredList;
+    }
+    
     const disciplines = this.groupBy(this.itemsPresenceListGeneral, 'disciplina');
 
     Object.keys(disciplines).forEach((key: any) => {
@@ -299,47 +368,52 @@ export class PresenceListComponent implements OnInit {
   }
 
   getItems() {
-    this.itemsPresenceList = [];
-    return this.presenceListService.getItems().snapshotChanges().pipe(
-      map(changes =>
-        changes.map(c =>
-          ({ id: c.payload.doc.id, ...c.payload.doc.data() })
+    if (this.admin) {
+      this.itemsPresenceList = [];
+      return this.presenceListService.getItems().snapshotChanges().pipe(
+        map(changes =>
+          changes.map(c =>
+            ({ id: c.payload.doc.id, ...c.payload.doc.data() })
+          )
         )
-      )
-    ).subscribe(data => {
+      ).subscribe(data => {
 
-      const unique = data.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "")) === i)
+        const unique = data.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "")) === i)
 
-      const discipline = this.groupBy(unique, 'disciplina');
+        const discipline = this.groupBy(unique, 'disciplina');
 
-      Object.keys(discipline).forEach((key: any) => {
-        this.itemsPresenceList.push(discipline[key])
-      })
+        Object.keys(discipline).forEach((key: any) => {
+          this.itemsPresenceList.push(discipline[key])
+        })
+        for (let i2 = 0; i2 < this.itemsPresenceList.length; i2++) {
+          for (let i3 = 0; i3 < this.itemsPresenceList[i2].length; i3++) {
 
-      for (let i2 = 0; i2 < this.itemsPresenceList.length; i2++) {
-        for (let i3 = 0; i3 < this.itemsPresenceList[i2].length; i3++) {
+            this.responsible = this.itemsPresenceList[i2][i3].responsavel;
+            this.discipline = this.itemsPresenceList[i2][i3].disciplina;
+            this.data = this.itemsPresenceList[i2][i3].data;
 
-          this.responsible = this.itemsPresenceList[i2][i3].responsavel;
-          this.discipline = this.itemsPresenceList[i2][i3].disciplina;
-          this.data = this.itemsPresenceList[i2][i3].data;
-
-          for (let i4 = 0; i4 < this.students.length; i4++) {
-            if (this.itemsPresenceList[i2][i3].id === "") {
-              this.itemsPresenceList[i2].slice(this.itemsPresenceList[i2][i3], 1);
+            for (let i4 = 0; i4 < this.students.length; i4++) {
+              if (this.itemsPresenceList[i2][i3].id === "") {
+                this.itemsPresenceList[i2].slice(this.itemsPresenceList[i2][i3], 1);
+              }
+              if
+                (this.students[i4].id === this.itemsPresenceList[i2][i3].id) {
+                this.itemsPresenceList[i2][i3].id = this.students[i4].nome;
+              }
             }
           }
+          for (let index = 0; index < this.itemsPresenceList.length; index++) {
+            this.disciplineName.push(this.itemsPresenceList[index][0].disciplina)
+          }
         }
-
-        for (let index = 0; index < this.itemsPresenceList.length; index++) {
-          this.disciplineName.push(this.itemsPresenceList[index][0].disciplina)
-        }
-      }
-      this.changeID();
-    });
+        //this.changeID();
+      });
+    } else {
+      console.log("oi")
+    }
   }
 
   changeID() {
-
     for (let i2 = 0; i2 < this.itemsPresenceList.length; i2++) {
       for (let i3 = 0; i3 < this.itemsPresenceList[i2].length; i3++) {
         for (let i4 = 0; i4 < this.students.length; i4++) {

@@ -38,6 +38,7 @@ export class RecognitionComponent implements OnInit {
   studentsInput: string;
   responsibleInput: string;
   disciplineNameInput: string;
+  emailInput: string;
 
   studentsList: Array<any> = [];
   itemsPresence: Array<any> = [];

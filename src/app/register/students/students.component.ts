@@ -156,6 +156,8 @@ export class StudentsComponent implements OnInit {
       email: [''],
       password: [''],
       admin: false,
+      nome: [''],
+      identificacao: [null]
     });
   }
 
@@ -253,6 +255,8 @@ export class StudentsComponent implements OnInit {
       this.userForm.value['email'] = this.studentForm.value['email'];
       this.userForm.value['password'] = `${this.studentForm.value['matricula']}@senai`;
       this.userForm.value['admin'] = this.studentForm.value['admin'];
+      this.userForm.value['nome'] = this.studentForm.value['nome'];
+      this.userForm.value['identificacao'] = this.studentForm.value['matricula'];
 
       this.studentForm.value['time'] = new Date().toLocaleString();
       this.studentService.create(this.studentForm.value)
@@ -268,7 +272,7 @@ export class StudentsComponent implements OnInit {
 
       this.userService.create(this.userForm.value)
         .then(async () => {
-          const result = await this.afAuth.createUserWithEmailAndPassword(this.userForm.value['email'], this.userForm.value['password']);
+          this.afAuth.createUserWithEmailAndPassword(this.userForm.value['email'], this.userForm.value['password']);
           this.resetForm();
         })
         .catch((e) => {
