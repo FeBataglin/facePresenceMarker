@@ -1,5 +1,6 @@
 
-function recognition(responsible, disciplineName, persons, data, email) {
+function recognition(responsible, disciplineName, persons, data, presenceMarker) {
+   
     const cam = document.getElementById('cam');
     var responsavel = document.getElementById('responsavel');
     var disciplina = document.getElementById('disciplina');
@@ -98,18 +99,21 @@ function recognition(responsible, disciplineName, persons, data, email) {
                         }
                     }
                 })
-                document.getElementById('alunos').value = students;
-                document.getElementById('responsavel').value = responsible;
-                document.getElementById('disciplina').value = disciplineName;
-                document.getElementById('data').value = data;
-                document.getElementById('button').click();
-                
+
+                if (presenceMarker) {
+                    document.getElementById('alunos').value = students;
+                    document.getElementById('responsavel').value = responsible;
+                    document.getElementById('disciplina').value = disciplineName;
+                    document.getElementById('data').value = data;
+                    document.getElementById('button').click();
+                }
+
                 new faceapi.draw.DrawTextField([
                     `ID: ${label} (${parseInt(distance * 100, 10)})`
                 ], box.bottomRight).draw(canvas)
-            }) 
+            })
         }, 100)
-    }) 
+    })
 }
 
- 
+

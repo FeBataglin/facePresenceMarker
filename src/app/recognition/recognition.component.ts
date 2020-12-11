@@ -34,6 +34,9 @@ export class RecognitionComponent implements OnInit {
   finalTime;
   responsible;
   disciplineName;
+  cont = 0;
+  presenceMarker: boolean;
+  capturas;
 
   studentsInput: string;
   responsibleInput: string;
@@ -120,22 +123,22 @@ export class RecognitionComponent implements OnInit {
     for (let i = 0; i < this.discipline.length; i++) {
       if (this.discipline[i].horaInicio <= this.currentTime
         && this.discipline[i].horaFim >= this.currentTime - 1) {
-        this.sumCaptures = this.discipline[i].cargaHoraria / this.discipline[i].qntdPresenca * 60000;
+        this.sumCaptures = this.discipline[i].cargaHoraria / this.discipline[i].qntdImagens * 60000;
         this.initialTime = this.discipline[i].horaInicio;
         this.finalTime = this.discipline[i].horaFim;
 
         var date = new Date();
         var HH = date.getHours();
         var mm = (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
-
+        this.cont = this.cont + 1;
         var currentHour = `${HH}${mm}`;
-
+        this.capturas = this.discipline[i].qntdPresenca;
         this.currentTime = parseInt(currentHour);
 
         this.responsible = this.discipline[i].responsavel;
         this.disciplineName = this.discipline[i].nome;
 
-        this.callRecognition(this.initialTime, this.finalTime, this.currentTime, this.responsible, this.disciplineName);
+        this.callRecognition(this.initialTime, this.finalTime, this.currentTime, this.responsible, this.disciplineName); 
       }
     }
   }
@@ -147,12 +150,21 @@ export class RecognitionComponent implements OnInit {
     var yyyy = date.getFullYear();
 
     var today = dd + '/' + mm + '/' + yyyy;
-
+    
+    if (this.cont === this.capturas) {
+      this.presenceMarker = true;
+    } 
+    
     if (initialTime <= currentTime && finalTime >= currentTime - 1) {
-      recognition(responsible, disciplineName, this.students, today);
+      recognition(responsible, disciplineName, this.students, today, this.presenceMarker);
+      setInterval(() => {
+        this.disciplineIdentify();
+      }, this.sumCaptures);
     } else {
       window.setInterval(() => this.disciplineIdentify(), 20000);
     }
+
+    
   }
 
   public attTime() {
@@ -173,7 +185,7 @@ export class RecognitionComponent implements OnInit {
     var dataValue = (<HTMLInputElement>document.getElementById("data")).value;
 
     let studentValueList = studentValue.split(",");
-    
+    console.log(studentValueList)
     for (let index = 0; index < studentValueList.length; index++) {
       const findStudent = this.itemsPresence.find(x => {
           if (x.id === studentValueList[index] && x.date === dataValue) {
@@ -189,8 +201,6 @@ export class RecognitionComponent implements OnInit {
         })
 
       if (findStudent === undefined && !this.foundStudent) {
-
-        //this.studentsList.push(studentValueList[index])
         this.recognitionService.create(studentValueList[index], responsibleValue, disciplineValue, dataValue)
       }
     }
