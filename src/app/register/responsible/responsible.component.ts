@@ -9,6 +9,8 @@ import { InstituitionService } from 'src/app/shared/services/instituition.servic
 import { ResponsibleService } from 'src/app/shared/services/responsible.service';
 import { UserService } from 'src/app/shared/services/user.service';
 import { AngularFireAuth } from '@angular/fire/auth';
+import * as firebase from 'firebase';
+import { AppComponent } from 'src/app/app.component';
 
 @Component({
   selector: 'app-responsible',
@@ -70,7 +72,8 @@ export class ResponsibleComponent implements OnInit {
     private instituitionService: InstituitionService,
     private classService: ClassService,
     private userService: UserService,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    public appComponent: AppComponent
   ) {
     this.createResponsibleForm();
     this.createUserForm();
@@ -121,6 +124,9 @@ export class ResponsibleComponent implements OnInit {
       this.userForm.value['nome'] = this.responsibleForm.value['nome'];
       this.userForm.value['identificacao'] = this.responsibleForm.value['cpf'];
 
+      var email = this.userForm.value['email'];
+      var password = this.userForm.value['password'];
+
       this.responsibleService.create(this.responsibleForm.value)
         .then(async () => {
           this.poNotification.success('Responsável salvo com sucesso!');
@@ -132,20 +138,39 @@ export class ResponsibleComponent implements OnInit {
           console.error(e);
         })
 
-        this.userService.create(this.userForm.value)
-        .then(async () => {
-          const result = await this.afAuth.createUserWithEmailAndPassword(this.userForm.value['email'], this.userForm.value['password']);
+      this.userService.create(this.userForm.value)
+        .then(() => {
+          var authAppResponsible = firebase.initializeApp({
+            apiKey: "AIzaSyAaMvobDgsN2O2DQpjGk7Dg_w_8ao5MPII",
+            authDomain: "facepresencemarker.firebaseapp.com",
+            databaseURL: "https://facepresencemarker.firebaseio.com",
+            projectId: "facepresencemarker",
+            storageBucket: "facepresencemarker.appspot.com",
+            messagingSenderId: "29444866679",
+            appId: "1:29444866679:web:ab78908e47227818623c72",
+            measurementId: "G-TX52PWWDXT"
+          }, 'authAppResponsible');
+          var detachedAuth = authAppResponsible.auth();
+
+          detachedAuth.createUserWithEmailAndPassword(email, password);
+          
           this.resetForm();
+          location.reload();
         })
         .catch((e) => {
           console.error(e);
         })
     }
+    this.getResponsible();
   }
+
+
 
   resetForm() {
     this.responsibleForm.reset();
+    this.userForm.reset();
     this.createResponsibleForm();
+    this.createUserForm();
   }
 
   initialize() {

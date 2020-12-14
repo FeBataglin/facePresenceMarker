@@ -47,6 +47,7 @@ import { AngularFireAuthModule } from '@angular/fire/auth';
     AngularFirestoreModule
   ],
   providers: [
+    AppComponent,
     PresenceListService,
     ManualPresenceService,
     StudentService,

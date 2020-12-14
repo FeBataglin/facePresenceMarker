@@ -12,6 +12,8 @@ import { InstituitionService } from 'src/app/shared/services/instituition.servic
 import { CourseService } from 'src/app/shared/services/course.service';
 import { UserService } from 'src/app/shared/services/user.service';
 import { AngularFireAuth } from '@angular/fire/auth';
+import * as firebase from 'firebase';
+import { AppComponent } from 'src/app/app.component';
 
 @Component({
   selector: 'app-students',
@@ -88,7 +90,8 @@ export class StudentsComponent implements OnInit {
     private disciplineService: DisciplineService,
     private studentsService: StudentService,
     private userService: UserService,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    public appComponent: AppComponent
   ) {
     this.createStudentForm();
     this.createUserForm();
@@ -163,9 +166,11 @@ export class StudentsComponent implements OnInit {
 
   resetForm() {
     this.studentForm.reset();
+    this.userForm.reset();
     this.files.nativeElement.value = "";
     this.urls = [];
     this.createStudentForm();
+    this.createUserForm();
   }
 
   getTime() {
@@ -210,6 +215,7 @@ export class StudentsComponent implements OnInit {
       this.opcoesCurso = this.courses;
     });
   }
+
 
   getClass() {
     this.classService.getAll().snapshotChanges().pipe(
@@ -258,6 +264,9 @@ export class StudentsComponent implements OnInit {
       this.userForm.value['nome'] = this.studentForm.value['nome'];
       this.userForm.value['identificacao'] = this.studentForm.value['matricula'];
 
+      var email = this.userForm.value['email'];
+      var password = this.userForm.value['password'];
+
       this.studentForm.value['time'] = new Date().toLocaleString();
       this.studentService.create(this.studentForm.value)
         .then(async () => {
@@ -272,8 +281,22 @@ export class StudentsComponent implements OnInit {
 
       this.userService.create(this.userForm.value)
         .then(async () => {
-          this.afAuth.createUserWithEmailAndPassword(this.userForm.value['email'], this.userForm.value['password']);
+          var authApp = firebase.initializeApp({
+            apiKey: "AIzaSyAaMvobDgsN2O2DQpjGk7Dg_w_8ao5MPII",
+            authDomain: "facepresencemarker.firebaseapp.com",
+            databaseURL: "https://facepresencemarker.firebaseio.com",
+            projectId: "facepresencemarker",
+            storageBucket: "facepresencemarker.appspot.com",
+            messagingSenderId: "29444866679",
+            appId: "1:29444866679:web:ab78908e47227818623c72",
+            measurementId: "G-TX52PWWDXT"
+          }, 'authApp');
+          var detachedAuth = authApp.auth();
+
+          detachedAuth.createUserWithEmailAndPassword(email, password);
+         
           this.resetForm();
+          location.reload();
         })
         .catch((e) => {
           console.error(e);

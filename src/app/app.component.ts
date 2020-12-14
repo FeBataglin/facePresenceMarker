@@ -78,7 +78,6 @@ export class AppComponent implements OnInit {
         }
       }
     );
-    this.changeMenu();
     if (window.location.href === "http://localhost:4200/#/login") {
       this.isHidden = true;
     } else {
