@@ -96,7 +96,9 @@ export class RecognitionComponent implements OnInit {
         this.itemsPresence.push({
           id: data[index].id,
           date: data[index].data,
-          discipline: data[index].disciplina
+          discipline: data[index].disciplina,
+          horaInicio: data[index].horaInicio,
+          horaFim: data[index].horaFim
         })
       }
     });
@@ -138,7 +140,7 @@ export class RecognitionComponent implements OnInit {
         this.responsible = this.discipline[i].responsavel;
         this.disciplineName = this.discipline[i].nome;
 
-        this.callRecognition(this.initialTime, this.finalTime, this.currentTime, this.responsible, this.disciplineName); 
+        this.callRecognition(this.initialTime, this.finalTime, this.currentTime, this.responsible, this.disciplineName);
       }
     }
   }
@@ -150,21 +152,16 @@ export class RecognitionComponent implements OnInit {
     var yyyy = date.getFullYear();
 
     var today = dd + '/' + mm + '/' + yyyy;
-    
+
     if (this.cont === this.capturas) {
       this.presenceMarker = true;
-    } 
-    
+    }
+
     if (initialTime <= currentTime && finalTime >= currentTime - 1) {
-      recognition(responsible, disciplineName, this.students, today, this.presenceMarker);
-      setInterval(() => {
-        this.disciplineIdentify();
-      }, this.sumCaptures);
+      recognition(responsible, disciplineName, this.students, today, initialTime, finalTime);
     } else {
       window.setInterval(() => this.disciplineIdentify(), 20000);
     }
-
-    
   }
 
   public attTime() {
@@ -182,26 +179,31 @@ export class RecognitionComponent implements OnInit {
     var studentValue = (<HTMLInputElement>document.getElementById("alunos")).value;
     var responsibleValue = (<HTMLInputElement>document.getElementById("responsavel")).value;
     var disciplineValue = (<HTMLInputElement>document.getElementById("disciplina")).value;
+    var initialTimeValue = (<HTMLInputElement>document.getElementById("horaInicio")).value;
+    var finalTimeValue = (<HTMLInputElement>document.getElementById("horaFim")).value;
     var dataValue = (<HTMLInputElement>document.getElementById("data")).value;
 
+    initialTimeValue = `${initialTimeValue.substring(0,2)}:${initialTimeValue.substring(2,4)}`;
+    finalTimeValue = `${finalTimeValue.substring(0,2)}:${finalTimeValue.substring(2,4)}`;
+
     let studentValueList = studentValue.split(",");
-    console.log(studentValueList)
+
     for (let index = 0; index < studentValueList.length; index++) {
       const findStudent = this.itemsPresence.find(x => {
-          if (x.id === studentValueList[index] && x.date === dataValue) {
-            if (x.discipline !== disciplineValue) {
-              this.foundStudent = false;
-            } else {
-              this.foundStudent = true;
-              return x;
-            }
-          } else {
+        if (x.id === studentValueList[index] && x.date === dataValue) {
+          if (x.discipline !== disciplineValue || x.horaInicio !== initialTimeValue) {
             this.foundStudent = false;
-          };
-        })
+          } else {
+            this.foundStudent = true;
+            return x;
+          }
+        } else {
+          this.foundStudent = false;
+        };
+      })
 
       if (findStudent === undefined && !this.foundStudent) {
-        this.recognitionService.create(studentValueList[index], responsibleValue, disciplineValue, dataValue)
+        this.recognitionService.create(studentValueList[index], responsibleValue, disciplineValue, dataValue, initialTimeValue, finalTimeValue)
       }
     }
   }

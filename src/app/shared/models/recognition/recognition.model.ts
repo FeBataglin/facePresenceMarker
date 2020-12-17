@@ -6,4 +6,6 @@ export interface Recognition {
     responsavel: String,
     disciplina: String,
     email: string;
+    horaInicio;
+    horaFim;
 }

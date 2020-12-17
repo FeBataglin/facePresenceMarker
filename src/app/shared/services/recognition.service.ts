@@ -22,23 +22,27 @@ export class RecognitionService {
     this.recognitionRef = this.db.collection('lista_de_presenca');
   }
 
-  create(id, responsible, discipline, datavalue) {
+  create(id, responsible, discipline, datavalue, initialTime, finalTime) {
     this.recognitionRef.add({
       data: datavalue,
       id: id,
       presenca: "presente",
       responsavel: responsible,
-      disciplina: discipline
+      disciplina: discipline,
+      horaInicio: initialTime,
+      horaFim: finalTime
     })
   }
 
-  createFalls(id, responsible, discipline, datavalue) {
+  createFalls(id, responsible, discipline, datavalue, initialTime, finalTime) {
     this.recognitionRef.add({
       data: datavalue,
       id: id,
       presenca: "falta",
       responsavel: responsible,
-      disciplina: discipline
+      disciplina: discipline,
+      horaInicio: initialTime,
+      horaFim: finalTime
     })
   }
 

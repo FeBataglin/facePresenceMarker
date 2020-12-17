@@ -20,8 +20,10 @@ export class PresenceListService {
   getColumns(): Array<PoTableColumn> {
     return [
       { property: 'data', label: 'Data', type: 'string', width: '1%'},
-      { property: 'id', label: 'Aluno', width: '40%'},
-      { property: 'responsavel', label: 'Responsável',  width: '40%'},
+      { property: 'horaInicio', label: 'Hora Início', type: 'string', width: '12%'},
+      { property: 'horaFim', label: 'Hora Fim', type: 'string', width: '10%'},
+      { property: 'id', label: 'Aluno', width: '30%'},
+      { property: 'responsavel', label: 'Responsável',  width: '28%'},
       {
         property: 'presenca',
         label: 'Presença',

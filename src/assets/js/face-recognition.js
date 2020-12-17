@@ -1,6 +1,6 @@
 
-function recognition(responsible, disciplineName, persons, data, presenceMarker) {
-   
+function recognition(responsible, disciplineName, persons, data, initialTime, finalTime) {
+
     const cam = document.getElementById('cam');
     var responsavel = document.getElementById('responsavel');
     var disciplina = document.getElementById('disciplina');
@@ -100,13 +100,13 @@ function recognition(responsible, disciplineName, persons, data, presenceMarker)
                     }
                 })
 
-                if (presenceMarker) {
-                    document.getElementById('alunos').value = students;
-                    document.getElementById('responsavel').value = responsible;
-                    document.getElementById('disciplina').value = disciplineName;
-                    document.getElementById('data').value = data;
-                    document.getElementById('button').click();
-                }
+                document.getElementById('alunos').value = students;
+                document.getElementById('responsavel').value = responsible;
+                document.getElementById('disciplina').value = disciplineName;
+                document.getElementById('data').value = data;
+                document.getElementById('horaInicio').value = initialTime;
+                document.getElementById('horaFim').value = finalTime;
+                document.getElementById('button').click();
 
                 new faceapi.draw.DrawTextField([
                     `ID: ${label} (${parseInt(distance * 100, 10)})`

@@ -55,6 +55,8 @@ export class PresenceListComponent implements OnInit {
   user;
   userEmail;
   admin;
+  horaInicio;
+  horaFim;
 
   docRef = this.db.collection("lista_de_presenca");
 
@@ -174,19 +176,22 @@ export class PresenceListComponent implements OnInit {
           this.discipline.push(doc.data().disciplina);
           this.responsible = doc.data().responsavel;
           this.data = doc.data().data;
+          this.horaInicio = doc.data().horaInicio;
+          this.horaFim = doc.data().horaFim;
           this.itemsAux.push(doc.data())
         });
 
         var disciplineIndex = this.disciplineIndex;
         var discipline = this.discipline.filter((v, i, a) => a.findIndex(t => (t === v && t !== "" && t !== undefined)) === i);
 
-        const unique = this.itemsAux.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "")) === i)
-
+        const unique = this.itemsAux.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "" && v.horaInicio === t.horaInicio)) === i)
+        
         var c = this.students.filter(function (objFromA) {
           return !unique.find(function (objFromB) {
             return objFromA.id === objFromB.id;
           })
         })
+        
         if (discipline.length === 1) {
           for (let i2 = 0; i2 < c.length; i2++) {
             this.putFalls.push({
@@ -194,7 +199,9 @@ export class PresenceListComponent implements OnInit {
               disciplina: disciplineIndex,
               responsavel: this.responsible,
               presenca: 'falta',
-              data: this.data
+              data: this.data,
+              horaInicio: this.horaInicio ,
+              horaFim: this.horaFim
             })
           }
         } else {
@@ -215,21 +222,22 @@ export class PresenceListComponent implements OnInit {
               })
             }
 
-
             for (let i2 = 0; i2 < c.length; i2++) {
               this.putFalls.push({
                 id: c[i2].id,
                 disciplina: discipline[i1],
                 responsavel: this.responsible,
                 presenca: 'falta',
-                data: this.data
+                data: this.data,
+                horaInicio: this.horaInicio ,
+                horaFim: this.horaFim
               })
             }
           }
         }
 
         for (let i2 = 0; i2 < this.putFalls.length; i2++) {
-          this.recognitionService.createFalls(this.putFalls[i2].id, this.putFalls[i2].responsavel, this.putFalls[i2].disciplina, this.putFalls[i2].data)
+          this.recognitionService.createFalls(this.putFalls[i2].id, this.putFalls[i2].responsavel, this.putFalls[i2].disciplina, this.putFalls[i2].data, this.putFalls[i2].horaInicio, this.putFalls[i2].horaFim)
         }
 
         //this.getItems();
@@ -259,10 +267,10 @@ export class PresenceListComponent implements OnInit {
 
       this.itemsPresenceListGeneral = [];
       this.servicePresenceListResponse = []
-
+   
       const unique = data.filter((v, i, a) => a.findIndex(t => (t.disciplina === v.disciplina)) === i)
-      const uniqueAux = data.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "")) === i);
-
+      const uniqueAux = data.filter((v, i, a) => a.findIndex(t => (t.id === v.id && t.disciplina === v.disciplina && v.data === t.data && v.id !== "" && v.horaInicio === t.horaInicio)) === i);
+     
       this.itemsPresenceListGeneral = uniqueAux;
       this.servicePresenceListResponse = uniqueAux;
 
